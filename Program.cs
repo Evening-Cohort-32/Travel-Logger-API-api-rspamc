@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Json;
 using TravelLogger;
+using TravelLogger.Models;
+using TravelLogger.Models.DTO;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +35,72 @@ app.UseCors(options =>
     options.AllowAnyHeader();
 });
 
-// Add all endpoints here
+//User Endpoints
+
+//User Registration
+app.MapPost("/api/users", (TravelLoggerDbContext db, User user) =>
+{
+    if (db.Users.Any(u => u.Email == user.Email))
+    {
+        return Results.BadRequest("A user with that email already exists");
+    }
+
+    db.Users.Add(user);
+    db.SaveChanges();
+    return Results.Created($"/api/users/{user.Id}", user);
+});
+
+//User Sign-in
+app.MapGet("/api/users/signin/{email}", (TravelLoggerDbContext db, string email) =>
+{
+    User user = db.Users.SingleOrDefault(u => u.Email == email);
+    if (user == null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(new UserDTO
+    {
+        Id = user.Id,
+        Name = user.Name,
+        Email = user.Email
+    });
+});
+
+//User by Id
+app.MapGet("/api/users/{id}", (TravelLoggerDbContext db, int id) =>
+{
+    return db.Users
+        .Select(u => new UserDTO
+        {
+            Id = u.Id,
+            Name = u.Name,
+            Email = u.Email,
+            Description = u.Description,
+            ImageUrl = u.ImageUrl
+        })
+        .Single(u => u.Id == id);
+});
+
+//User Update
+app.MapPut("/api/users/{id}", (TravelLoggerDbContext db, int id, int userId, User user) =>
+{
+    if (id != userId)
+    {
+        return Results.StatusCode(403);
+    }
+
+    User userToUpdate = db.Users.SingleOrDefault(u => u.Id == id);
+    if (userToUpdate == null)
+    {
+        return Results.NotFound();
+    }
+
+    userToUpdate.Description = user.Description;
+    userToUpdate.ImageUrl = user.ImageUrl;
+    db.SaveChanges();
+    return Results.NoContent();
+});
+
 
 app.Run();

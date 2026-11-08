@@ -1,11 +1,13 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using TravelLogger.Models;
 
 namespace TravelLogger;
 
 public class TravelLoggerDbContext : DbContext
 {
 
-    // Define tables here
+    public DbSet<User> Users { get; set; }
     
     public TravelLoggerDbContext(DbContextOptions<TravelLoggerDbContext> context) : base(context)
     {
@@ -13,7 +15,8 @@ public class TravelLoggerDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Seed data here
-        
+
+        // seed your data here
+
     }
 }
