@@ -102,5 +102,27 @@ app.MapPut("/api/users/{id}", (TravelLoggerDbContext db, int id, int userId, Use
     return Results.NoContent();
 });
 
+//City Endpoints
+app.MapGet("/api/cities", (TravelLoggerDbContext db) =>
+{
+    return db.Cities
+    .Select(c => new CityDTO
+    {
+        Id = c.Id,
+        Name = c.Name
+    }).ToList();
+});
+
+//City by id
+app.MapGet("/api/cities/{id}", (TravelLoggerDbContext db, int id) =>
+{
+    return db.Cities
+        .Select(c => new CityDTO
+        {
+            Id = c.Id,
+            Name = c.Name
+        })
+        .Single(c => c.Id == id);
+});
 
 app.Run();
